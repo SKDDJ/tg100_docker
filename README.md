@@ -26,9 +26,9 @@
 
 ```bash
 docker/Iluvatar
-├── 3.7 ## Python3.7 版本whl包，离线包已包含，无需另外下载
-├── corex-installer-***.run ## 软件栈离线安装包
-├── cuda_***_linux.run ## CUDA离线安装包
+├── apps-py3.10 ## Python3.10 版本whl包，离线包已包含，无需另外下载
+├── corex-installer-linux64-3.2.0_x86_64_10.2.run ## 软件栈离线安装包
+├── cuda_10.2.89_440.33.01_linux.run ## CUDA离线安装包
 └── Dockerfile ## 镜像构建模板文件
 ```
 
@@ -39,21 +39,23 @@ docker/Iluvatar
 ## 设置镜像名称
 $ IMAGE_NAME=deepsparkhub
 ## 设置镜像版本，与DeepSparkHub发布版本号对应 
-$ IMAGE_VERSION=23.06
+$ IMAGE_VERSION=24.06
 ```
 
 **设置离线安装包名称：**
 ```bash
-$ COREX_INSTALL=corex-installer-***.run
-$ CUDA_INSTALL=cuda_***_linux.run
+$ COREX_INSTALL=corex-installer-linux64-3.2.0_x86_64_10.2.run
+$ CUDA_INSTALL=cuda_10.2.89_440.33.01_linux.run
 ```
 
 **构建容器镜像：**
 ```bash
-$ docker build --build-arg IMAGE_VERSION=${IMAGE_VERSION} \
-               --build-arg CUDA_INSTALL=${CUDA_INSTALL} \
-               --build-arg COREX_INSTALL=${COREX_INSTALL} \
-               -t ${IMAGE_NAME}:${IMAGE_VERSION} .
+$ docker build --network host --build-arg IMAGE_VERSION=${IMAGE_VERSION} \
+             --build-arg PYTHON_VERSION=${PYTHON_VERSION} \
+             --build-arg CUDA_INSTALL=${CUDA_INSTALL} \
+             --build-arg COREX_INSTALL=${COREX_INSTALL} \
+             --no-cache \
+             -t ${IMAGE_NAME}:${IMAGE_VERSION} .
 ```
 
 **确认镜像构建成功：**
@@ -66,9 +68,9 @@ $ docker images | grep ${IMAGE_NAME}
 ## 设置容器名称
 $ DOCKER_NAME=deepsparkhub_test
 ## 启动容器
-$ sudo docker run -itd --name ${DOCKER_NAME} \
+$ docker run -itd --name ${DOCKER_NAME} \
                   --privileged --cap-add=ALL \
-                  --ipc=host --pid=host ${IMAGE_NAME}:${IMAGE_VERSION}
+                  --ipc=host --pid=host --restart=always -p 10007:22 -p 10008:8888 -p 10009:3001 -v /root/shiym_proj:/root/shiym_proj  ${IMAGE_NAME}:${IMAGE_VERSION}
 ## 登录容器
 $ docker exec -it ${DOCKER_NAME} bash
 ## 初始目录为 /root/deepsparkhub
